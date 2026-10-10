@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap');
+
+:root {
+  /* surfaces & ink */
+  --lc-color-bg: #f4f5f2;
+  --lc-color-surface: #ffffff;
+  --lc-color-ink: #17191c;
+  --lc-color-ink-soft: #3e434a;
+  --lc-color-ink-muted: #5a6068;
+  --lc-color-border: #dcdfd8;
+  --lc-color-border-strong: #c9cdc4;
+  --lc-color-divider: #eceee9;
+
+  /* brand */
+  --lc-color-primary: #1f4fd1;
+  --lc-color-primary-hover: #163a9e;
+  --lc-color-accent: #f0a04b;
+
+  /* side navigation */
+  --lc-color-nav-bg: #17191c;
+  --lc-color-nav-fg: #e9eae6;
+  --lc-color-nav-active: #2a2d31;
+  --lc-color-nav-muted: #9fa39b;
+
+  /* status tones (background / foreground) */
+  --lc-tone-success-bg: #e3f0e7;
+  --lc-tone-success-fg: #22633c;
+  --lc-tone-warning-bg: #fcefd9;
+  --lc-tone-warning-fg: #8a4a05;
+  --lc-tone-danger-bg: #fbe6e2;
+  --lc-tone-danger-fg: #a12a16;
+  --lc-tone-info-bg: #e6ecfb;
+  --lc-tone-info-fg: #1d44b0;
+  --lc-tone-neutral-bg: #eceee9;
+  --lc-tone-neutral-fg: #4a4f56;
+
+  /* lifecycle timeline */
+  --lc-timeline-active: #2f7a4d;
+  --lc-timeline-security: #7c9be8;
+  --lc-timeline-ended: #c4c8c0;
+  --lc-timeline-ended-tail: #d9dcd5;
+  --lc-timeline-unknown: #9aa6bc;
+  --lc-timeline-grid: #e2e4df;
+
+  /* type */
+  --lc-font-sans: 'IBM Plex Sans KR', system-ui, sans-serif;
+  --lc-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* shape */
+  --lc-radius-sm: 6px;
+  --lc-radius-md: 8px;
+  --lc-radius-lg: 12px;
+  --lc-radius-pill: 999px;
+}

@@ -1,0 +1,31 @@
+{
+  "projectId": "a7a063a7-8490-4d46-9fe9-b31fdd4fe7f9",
+  "shape": "package",
+  "pkg": "eol-poc-frontend",
+  "globalName": "LifecycleUI",
+  "buildCmd": "npm run build",
+  "cssEntry": "dist/style.css",
+  "docsDir": "docs/components",
+  "overrides": {
+    "AppShell": {
+      "cardMode": "single",
+      "viewport": "1200x520"
+    },
+    "PageHeader": {
+      "cardMode": "column"
+    },
+    "Panel": {
+      "cardMode": "column"
+    },
+    "DescriptionList": {
+      "cardMode": "column"
+    },
+    "DataTable": {
+      "cardMode": "column"
+    },
+    "LifecycleTimeline": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-app/
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules
+.DS_Store
+.playwright-mcp/
