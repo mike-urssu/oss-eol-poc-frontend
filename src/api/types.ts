@@ -1,4 +1,4 @@
-// Response shapes from eol-poc-backend docs/design.md §6.
+// Response shapes of eol-poc-backend (LifecycleQueryService / *Controller DTOs).
 import type { CollectionStatus, EolStatus, PreciseDate, ValidationStatus } from '../lib/eol';
 
 export interface OpensourceSummary {
@@ -26,10 +26,11 @@ export interface Source {
   active: boolean;
   lastCollection: {
     id: number;
-    status: CollectionStatus;
+    /** `null` while the collection is still running. */
+    status: CollectionStatus | null;
     skippedUnchanged: boolean;
     finishedAt: string | null;
-    error: string | null;
+    errorMessage: string | null;
   } | null;
 }
 
@@ -47,8 +48,7 @@ export interface VersionRow {
 export interface OpensourceDetail {
   slug: string;
   name: string;
-  homepageUrl: string;
-  description?: string | null;
+  homepageUrl: string | null;
   latestVersion: string | null;
   sources: Source[];
   versions: VersionRow[];

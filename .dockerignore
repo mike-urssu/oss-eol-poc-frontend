@@ -1,0 +1,9 @@
+.git
+node_modules
+dist
+dist-app
+ds-bundle
+.ds-sync
+.design-sync
+.playwright-mcp
+docs

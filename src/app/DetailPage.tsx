@@ -40,10 +40,10 @@ export function DetailPage({ slug, onBack }: { slug: string; onBack: () => void 
       <PageHeader
         title={p.name}
         badge={p.latestVersion && <Badge tone="info">최신 {p.latestVersion}</Badge>}
-        description={p.description ?? p.homepageUrl}
+        description={p.homepageUrl ?? undefined}
         actions={
           <>
-            <Button href={p.homepageUrl}>공식 사이트</Button>
+            {p.homepageUrl && <Button href={p.homepageUrl}>공식 사이트</Button>}
             <Button variant="primary" onClick={recollect} disabled={collect.busy}>
               {collect.busy ? '요청 중…' : '다시 수집'}
             </Button>
@@ -68,7 +68,7 @@ export function DetailPage({ slug, onBack }: { slug: string; onBack: () => void 
               render: (s) =>
                 s.lastCollection ? (
                   <span style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                    <StatusBadge status={s.lastCollection.status} title={s.lastCollection.error ?? undefined} />
+                    {s.lastCollection.status ? <StatusBadge status={s.lastCollection.status} title={s.lastCollection.errorMessage ?? undefined} /> : <span className="lc-muted">수집 중</span>}
                     <span className="lc-mono lc-muted" style={{ fontSize: 13 }}>{formatDateTime(s.lastCollection.finishedAt)}</span>
                     {s.lastCollection.skippedUnchanged && <span className="lc-muted" style={{ fontSize: 13 }}>변경 없음</span>}
                   </span>

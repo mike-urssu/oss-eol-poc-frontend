@@ -34,7 +34,6 @@ function detail(slug: string): OpensourceDetail | undefined {
     slug: p.id,
     name: p.title,
     homepageUrl: p.home,
-    description: p.desc,
     latestVersion: p.latest,
     sources: [
       {
@@ -43,7 +42,7 @@ function detail(slug: string): OpensourceDetail | undefined {
         collectorType: 'WEB',
         trustLevel: 'OFFICIAL',
         active: true,
-        lastCollection: { id: 31, status: failed ? 'FAILED' : 'SUCCESS', skippedUnchanged: !failed, finishedAt: COLLECTED_AT, error: failed ? `HTTP 503 (${p.home})` : null },
+        lastCollection: { id: 31, status: failed ? 'FAILED' : 'SUCCESS', skippedUnchanged: !failed, finishedAt: COLLECTED_AT, errorMessage: failed ? `HTTP 503 (${p.home})` : null },
       },
     ],
     versions,
@@ -54,7 +53,7 @@ function summary(d: OpensourceDetail): OpensourceSummary {
   const eolSummary: Record<EolStatus, number> = { EOL: 0, EOL_SOON: 0, SUPPORTED: 0, UNKNOWN: 0 };
   d.versions.forEach((v) => eolSummary[v.eolStatus]++);
   const last = d.sources[0].lastCollection!;
-  return { slug: d.slug, name: d.name, latestVersion: d.latestVersion, versionCount: d.versions.length, eolSummary, lastCollectedAt: last.finishedAt, collectionStatus: last.status, collectionError: last.error };
+  return { slug: d.slug, name: d.name, latestVersion: d.latestVersion, versionCount: d.versions.length, eolSummary, lastCollectedAt: last.finishedAt, collectionStatus: last.status, collectionError: last.errorMessage };
 }
 
 const delay = <T,>(v: T) => new Promise<T>((r) => setTimeout(() => r(v), 150));
