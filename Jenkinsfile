@@ -1,4 +1,4 @@
-// 운영 배포 파이프라인: 이미지 빌드(타입 검사·빌드 포함) → push → (승인) → SSH로 서버에 배포 → 응답 확인
+// 운영 배포 파이프라인: 이미지 빌드(타입 검사·빌드 포함) → push → SSH로 서버에 배포 → 응답 확인 → GHCR 오래된 이미지 정리
 // 처음 설정 방법은 deploy/README.md 참고. 백엔드(oss-eol-poc-backend)와 같은 credentials·환경 변수를 쓴다.
 // Jenkins 시스템 환경 변수 DEPLOY_HOST(운영 서버 user@host), DEPLOY_PORT(SSH 포트)를 사용한다.
 pipeline {
@@ -7,10 +7,12 @@ pipeline {
     environment {
         REGISTRY          = 'ghcr.io'                       // GitHub Container Registry
         IMAGE             = "${REGISTRY}/mike-urssu/oss-eol-poc-frontend"
-        REGISTRY_CRED     = 'ghcr-credentials'              // Username with password: GitHub 사용자명 + PAT(write:packages)
+        REGISTRY_CRED     = 'ghcr-credentials'              // Username with password: GitHub 사용자명 + PAT(write:packages, delete:packages)
         DEPLOY_SSH_CRED   = 'deploy-ssh-key'                // SSH Username with private key: 운영 서버 배포 계정의 개인키
         DEPLOY_DIR        = '/opt/projects/oss-eol-poc/frontend'
         APP_URL           = 'https://oss-poc.jjoon.cloud'
+        GHCR_PACKAGE      = 'oss-eol-poc-frontend'
+        KEEP_IMAGES       = '10'                            // GHCR에 남길 최신 이미지 수
     }
 
     options {
@@ -21,11 +23,12 @@ pipeline {
     stages {
         stage('Build image') {
             // Dockerfile 1단계에서 npm ci, 타입 검사, 날짜 로직 self-check, 운영 빌드를 수행한다.
+            // 운영 서버가 ARM64다. 빌드 단계는 에이전트 플랫폼에서 돌고, 최종 nginx 이미지만 arm64로 만든다.
             steps {
                 script {
                     env.IMAGE_TAG = env.GIT_COMMIT.take(8)
                 }
-                sh 'docker build --platform linux/amd64 -t "$IMAGE:$IMAGE_TAG" .'
+                sh 'docker build --platform linux/arm64 -t "$IMAGE:$IMAGE_TAG" .'
             }
         }
 
@@ -45,14 +48,6 @@ pipeline {
             }
         }
 
-        stage('Approve') {
-            steps {
-                timeout(time: 30, unit: 'MINUTES') {
-                    input message: "운영 서버에 프런트엔드 ${env.IMAGE_TAG}을(를) 배포할까요?", ok: '배포'
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: env.DEPLOY_SSH_CRED, keyFileVariable: 'SSH_KEY')]) {
@@ -66,6 +61,8 @@ pipeline {
                             printf 'IMAGE=%s\\nIMAGE_TAG=%s\\n' '$IMAGE' '$IMAGE_TAG' > image.env
                             docker compose --env-file image.env pull
                             docker compose --env-file image.env up -d
+                            # 이 프로젝트 라벨이 붙은 이미지 중 컨테이너가 쓰지 않는 것만 지운다(다른 프로젝트 이미지는 건드리지 않음).
+                            docker image prune -af --filter label=cloud.jjoon.project=oss-eol-poc
                         "
                     '''
                 }
@@ -75,6 +72,18 @@ pipeline {
         stage('Verify') {
             steps {
                 sh 'curl -fsS --retry 10 --retry-delay 3 --retry-all-errors "$APP_URL/" > /dev/null'
+            }
+        }
+
+        stage('Clean up registry') {
+            // GHCR에서 최신 KEEP_IMAGES개만 남긴다. 정리에 실패해도 배포는 성공으로 둔다.
+            // 에이전트에 Node가 없어도 되게 node 컨테이너에서 deploy/ghcr-cleanup.mjs를 돌린다.
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    withCredentials([usernamePassword(credentialsId: env.REGISTRY_CRED, usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
+                        sh 'docker run --rm -e GHCR_PACKAGE -e REG_PASS -e KEEP_IMAGES -v "$PWD/deploy:/deploy:ro" node:22-alpine node /deploy/ghcr-cleanup.mjs'
+                    }
+                }
             }
         }
     }
