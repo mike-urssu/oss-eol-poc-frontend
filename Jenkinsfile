@@ -53,11 +53,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: env.DEPLOY_SSH_CRED, keyFileVariable: 'SSH_KEY')]) {
+                    // job 이름에 공백이 있어 SSH_KEY 경로(워크스페이스@tmp 아래)에도 공백이 들어간다. 경로를 따옴표로 감싸 넘긴다.
                     sh '''
-                        SSH_OPTS="-i $SSH_KEY -o StrictHostKeyChecking=accept-new"
-                        ssh $SSH_OPTS -p "$DEPLOY_PORT" "$DEPLOY_HOST" "mkdir -p '$DEPLOY_DIR'"
-                        scp $SSH_OPTS -P "$DEPLOY_PORT" deploy/compose.yml "$DEPLOY_HOST:$DEPLOY_DIR/compose.yml"
-                        ssh $SSH_OPTS -p "$DEPLOY_PORT" "$DEPLOY_HOST" "
+                        ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new -p "$DEPLOY_PORT" "$DEPLOY_HOST" "mkdir -p '$DEPLOY_DIR'"
+                        scp -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new -P "$DEPLOY_PORT" deploy/compose.yml "$DEPLOY_HOST:$DEPLOY_DIR/compose.yml"
+                        ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new -p "$DEPLOY_PORT" "$DEPLOY_HOST" "
                             set -e
                             cd '$DEPLOY_DIR'
                             printf 'IMAGE=%s\\nIMAGE_TAG=%s\\n' '$IMAGE' '$IMAGE_TAG' > image.env
