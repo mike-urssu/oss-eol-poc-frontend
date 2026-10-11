@@ -1,14 +1,14 @@
 # 운영 배포 (Jenkins)
 
-`main` 브랜치를 Jenkins가 Docker 이미지(nginx + 정적 파일)로 빌드해 운영 서버에 배포하고, Traefik을 통해 `https://oss-poc.jjoon.cloud`로 서비스한다. 백엔드(`oss-eol-poc-backend`, `https://oss-poc-api.jjoon.cloud`)와 같은 서버·Jenkins credentials·배포 방식을 쓴다.
+`main` 브랜치를 Jenkins가 Docker 이미지(nginx + 정적 파일)로 빌드해 운영 서버에 배포하고, Traefik을 통해 `https://oss-eol.jjoon.cloud`로 서비스한다. 백엔드(`oss-eol-poc-backend`, `https://oss-eol-api.jjoon.cloud`)와 같은 서버·Jenkins credentials·배포 방식을 쓴다.
 
 ```
 GitHub ──webhook──▶ Jenkins: Build image → Push(ghcr.io) → Deploy(SSH) → Verify → Clean up registry
                                               │                         │
                                        ghcr.io ◀─────────────── pull ── 운영 서버 (docker compose)
 
- 브라우저 ──▶ Traefik ──(proxy)──▶ web(nginx)      oss-poc.jjoon.cloud
-          └─▶ Traefik ──(proxy)──▶ 백엔드 app       oss-poc-api.jjoon.cloud (CORS)
+ 브라우저 ──▶ Traefik ──(proxy)──▶ web(nginx)      oss-eol.jjoon.cloud
+          └─▶ Traefik ──(proxy)──▶ 백엔드 app       oss-eol-api.jjoon.cloud (CORS)
 ```
 
 | 파일 | 역할 |
@@ -24,8 +24,8 @@ GitHub ──webhook──▶ Jenkins: Build image → Push(ghcr.io) → Deploy(
 
 백엔드 배포가 이미 동작한다면 Jenkins credentials·환경 변수, 서버의 배포 계정·GHCR 로그인·`proxy` 네트워크는 그대로 쓴다. 추가로 필요한 것만 적는다.
 
-1. **DNS**: `oss-poc.jjoon.cloud`가 운영 서버를 가리키게 한다.
-2. **백엔드 CORS**: 운영 서버 백엔드 `app.env`에 `EOL_CORS_ALLOWED_ORIGINS=https://oss-poc.jjoon.cloud`가 있어야 한다(백엔드 `deploy/app.env.example` 기본값). 바꿨다면 백엔드를 재기동한다.
+1. **DNS**: `oss-eol.jjoon.cloud`가 운영 서버를 가리키게 한다.
+2. **백엔드 CORS**: 운영 서버 백엔드 `app.env`에 `EOL_CORS_ALLOWED_ORIGINS=https://oss-eol.jjoon.cloud`가 있어야 한다(백엔드 `deploy/app.env.example` 기본값). 바꿨다면 백엔드를 재기동한다.
 3. **GHCR 패키지**: `ghcr-credentials`의 PAT는 classic PAT(`write:packages`, `delete:packages`)여야 한다(백엔드와 같은 요구사항). 첫 push 후 `ghcr.io/mike-urssu/oss-eol-poc-frontend`가 private으로 만들어진다. 운영 서버 배포 계정은 백엔드 때 `docker login ghcr.io`를 했으므로 그대로 pull할 수 있다(같은 계정 소유 패키지).
 4. **Jenkins**
    - 빌드 에이전트 요구사항: Docker(BuildKit), `ssh`/`scp`, `curl`. Node.js는 필요 없다(Docker 안에서 빌드).
@@ -61,5 +61,5 @@ docker compose --env-file image.env up -d
 cd /opt/projects/oss-eol-poc/frontend
 docker compose --env-file image.env ps
 docker compose --env-file image.env logs -f web
-curl -sI https://oss-poc.jjoon.cloud/
+curl -sI https://oss-eol.jjoon.cloud/
 ```
