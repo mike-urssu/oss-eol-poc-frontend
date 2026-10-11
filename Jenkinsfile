@@ -35,15 +35,15 @@ pipeline {
         stage('Push image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: env.REGISTRY_CRED, usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
+                    // macOS 에이전트의 Docker Desktop은 로그인 정보를 키체인(credsStore)에 저장하려다 실패한다(Keychain Error -61).
+                    // 빌드마다 임시 DOCKER_CONFIG에 로그인하고 끝나면 지운다. 임시 설정엔 현재 context가 없으니 DOCKER_HOST로 데몬 소켓을 넘긴다.
                     sh '''
+                        export DOCKER_HOST="$(docker context inspect --format '{{.Endpoints.docker.Host}}')"
+                        export DOCKER_CONFIG="$(mktemp -d)"
+                        trap 'rm -rf "$DOCKER_CONFIG"' EXIT
                         echo "$REG_PASS" | docker login "$REGISTRY" -u "$REG_USER" --password-stdin
                         docker push "$IMAGE:$IMAGE_TAG"
                     '''
-                }
-            }
-            post {
-                always {
-                    sh 'docker logout "$REGISTRY" || true'
                 }
             }
         }
